@@ -352,7 +352,7 @@ Help students find courses, explain concepts, debug code, plan learning paths. B
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         max_tokens: 1024,
         messages: [
           { role: "system", content: systemPrompt },
