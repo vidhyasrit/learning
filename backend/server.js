@@ -355,7 +355,7 @@ Help students find courses, explain concepts, debug code, plan learning paths. B
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "command-r",
+        model: "command-a-03-2025",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages.map(m => ({ role: m.role, content: m.content })),
