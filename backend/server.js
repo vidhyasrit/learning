@@ -333,9 +333,9 @@ app.post("/api/chat", chatLimiter, async (req, res) => {
   if (!messages || !Array.isArray(messages))
     return res.status(400).json({ error: "Messages array is required" });
 
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.COHERE_API_KEY;
   if (!apiKey)
-    return res.status(500).json({ error: "AI service not configured. Add GROQ_API_KEY to .env" });
+    return res.status(500).json({ error: "AI service not configured. Add COHERE_API_KEY to .env" });
 
   const systemPrompt = courseContext
     ? `You are an expert learning assistant for LearnAI. Helping with: "${courseContext.title}" (${courseContext.category}, ${courseContext.level}).
@@ -348,25 +348,28 @@ ${courses.map(c => `- ${c.title} (${c.category}, ${c.level})`).join("\n")}
 Help students find courses, explain concepts, debug code, plan learning paths. Be friendly and educational.`;
 
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.cohere.com/v2/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        max_tokens: 1024,
+        model: "command-r",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages.map(m => ({ role: m.role, content: m.content })),
         ],
+        max_tokens: 1024,
       }),
     });
     if (!response.ok) {
       const err = await response.json();
-      console.error("Groq error:", err);
+      console.error("Cohere error:", err);
       return res.status(502).json({ error: "AI service error. Please try again." });
     }
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Could not generate a response.";
+    const reply = data.message?.content?.[0]?.text || "Could not generate a response.";
     res.json({ reply, tokens: data.usage });
   } catch (err) {
     console.error("Chat error:", err); 
@@ -377,5 +380,5 @@ Help students find courses, explain concepts, debug code, plan learning paths. B
 app.listen(PORT, () => {
   console.log(`\n🚀 LearnAI Backend running on http://localhost:${PORT}`);
   console.log(`📚 ${courses.length} courses loaded`);
-  console.log(`🤖 AI Chat: ${process.env.GROQ_API_KEY ? "✅ Configured" : "❌ Missing GROQ_API_KEY"}\n`);
+  console.log(`🤖 AI Chat: ${process.env.COHERE_API_KEY ? "✅ Configured" : "❌ Missing COHERE_API_KEY"}\n`);
 });
